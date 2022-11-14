@@ -4,26 +4,26 @@ use Swoole\Coroutine\Channel;
 
 $users = [
     [
-        "id" => 1,
-        "name" => "John Doe",
-        "age" => 42,
+        'id' => 1,
+        'name' => 'John Doe',
+        'age' => 42,
     ], [
-        "id" => 2,
-        "name" => "Chris Pen",
-        "age" => 44,
+        'id' => 2,
+        'name' => 'Chris Pen',
+        'age' => 44,
     ]
 ];
 
 $hobbies = [
     [
-        "userId" => 1,
-        "hobby" => "Stamps",
+        'userId' => 1,
+        'hobby' => 'Stamps',
     ], [
-        "userId" => 1,
-        "hobby" => "golf",
+        'userId' => 1,
+        'hobby' => 'golf',
     ], [
-        "userId" => 2,
-        "hobby" => "fishing",
+        'userId' => 2,
+        'hobby' => 'fishing',
     ]
 ];
 
@@ -35,19 +35,19 @@ Co\run(function () use ($users, $hobbies, $chan, $chan2) {
 
     go(function () use ($wg, $users, &$dbUsers, $chan) {
         $wg->add();
-        $chan->push("collecting user data");
+        $chan->push('collecting user data');
         co::sleep(3);
         $dbUsers = $users;
-        $chan->push("user data collected");
+        $chan->push('user data collected');
         $wg->done();
     });
 
     $dbHobbies = [];
     go(function () use ($wg, $hobbies, &$dbHobbies, $chan) {
         $wg->add();
-        $chan->push("collecting hobby data");
+        $chan->push('collecting hobby data');
         $dbHobbies = $hobbies;
-        $chan->push("hobby data collected");
+        $chan->push('hobby data collected');
         $wg->done();
     });
 
@@ -63,15 +63,16 @@ Co\run(function () use ($users, $hobbies, $chan, $chan2) {
 
         foreach ($dbUsers as $key => $user) {
             co::sleep(random_int(1, 5));
-            $save[$key] = $dbUsers + ["hobbies" => []];
+            $save[$user['id']] = $dbUsers + ['hobbies' => []];
 
             foreach ($dbHobbies as $hobby) {
-                if ($user["id"] === $hobby["userId"]) {
-                    $save[$key]["hobbies"][] = $hobby["hobby"];
+                if ($user['id'] === $hobby['userId']) {
+                    $save[$user['id']]['hobbies'][] = $hobby['hobby'];
                 }
             }
 
-            $chan2->push(($key + 1) . " of " . $count . " users saved");
+            $chan2->push(($key + 1) . ' of ' . $count . ' users saved');
+            co::sleep(1);
         }
 
         $chan2->push($save);
@@ -88,7 +89,7 @@ Co\run(function () use ($users, $hobbies, $chan, $chan2) {
 
 function channelOut($x)
 {
-    $stats = count($x->stats()) ?? 0;
+    $stats = count($x->stats()) + 1 ?? 0;
 
     while ($stats) {
         $data = $x->pop();
